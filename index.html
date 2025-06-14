@@ -35,16 +35,18 @@
       display: flex;
       gap: 10px;
       margin-bottom: 20px;
+      flex-wrap: wrap;
     }
-    input[type="text"] {
-      flex-grow: 1;
+    select, input[type="text"] {
       padding: 12px 15px;
       font-size: 1rem;
       border: 2px solid #ddd;
       border-radius: 8px;
       transition: border-color 0.3s ease;
+      flex-grow: 1;
+      min-width: 120px;
     }
-    input[type="text"]:focus {
+    select:focus, input[type="text"]:focus {
       outline: none;
       border-color: #0078d7;
       box-shadow: 0 0 6px #0078d7aa;
@@ -59,6 +61,7 @@
       font-size: 1rem;
       cursor: pointer;
       transition: background-color 0.3s ease;
+      white-space: nowrap;
     }
     button:hover {
       background-color: #005ea2;
@@ -74,6 +77,7 @@
       white-space: pre-wrap;
       user-select: text;
       box-shadow: inset 0 0 5px #cbd5e1;
+      word-break: break-word;
     }
     .error {
       color: #cc0000;
@@ -90,31 +94,42 @@
   <div class="container">
     <h1>Order Lookup</h1>
     <div class="search-bar">
-      <input type="text" id="orderId" placeholder="Enter Order Id" aria-label="Order Id" />
+      <select id="searchType" aria-label="Search By">
+        <option value="orderId">Order Id</option>
+        <option value="email">Email Address</option>
+      </select>
+      <input type="text" id="searchValue" placeholder="Enter your search" aria-label="Search value" />
       <button onclick="searchOrder()">Search</button>
     </div>
-    <div id="result" class="result info">Enter an Order Id to search for your order details.</div>
+    <div id="result" class="result info">Enter an Order Id or Email Address to search for order details.</div>
   </div>
 
   <script>
     async function searchOrder() {
-      const orderId = document.getElementById('orderId').value.trim();
+      const searchType = document.getElementById('searchType').value;
+      const searchValue = document.getElementById('searchValue').value.trim();
       const resultDiv = document.getElementById('result');
 
-      if (!orderId) {
+      if (!searchValue) {
         resultDiv.className = 'result error';
-        resultDiv.textContent = '⚠️ Please enter an Order Id.';
+        resultDiv.textContent = `⚠️ Please enter a ${searchType === 'orderId' ? 'Order Id' : 'Email Address'}.`;
         return;
       }
 
       resultDiv.className = 'result info';
       resultDiv.textContent = '🔎 Searching...';
 
-      // Replace this with your actual deployed Google Apps Script URL
-      const scriptUrl = 'https://script.google.com/macros/s/AKfycbyW8gawvI3PVrqwC-wSYUDydYJ6OHFMYd2tz0pMfCEVz0gsro-mm4UzOEULeLYr__Q2/exec';
+      const scriptUrl = 'https://script.google.com/macros/s/AKfycbzy3YlDn8L6BPjeTglHNP7ncibWE6x4WgmiXGlA6M1Hruq5hd75Kkt-k_irFAVWSu6E/exec'; // <-- Replace this
+
+      let url = scriptUrl + '?';
+      if (searchType === 'orderId') {
+        url += 'orderId=' + encodeURIComponent(searchValue);
+      } else {
+        url += 'email=' + encodeURIComponent(searchValue);
+      }
 
       try {
-        const response = await fetch(`${scriptUrl}?orderId=${encodeURIComponent(orderId)}`);
+        const response = await fetch(url);
         const data = await response.json();
 
         if (data.error) {
@@ -125,23 +140,22 @@
 
         if (!data.length) {
           resultDiv.className = 'result info';
-          resultDiv.textContent = '🔍 No order found with that Order Id.';
+          resultDiv.textContent = `🔍 No results found for that ${searchType === 'orderId' ? 'Order Id' : 'Email Address'}.`;
           return;
         }
 
+        // Show all fields nicely
         const order = data[0];
         resultDiv.className = 'result';
-        resultDiv.innerHTML = `
-          <strong>Order Id:</strong> ${order['Order Id']}<br>
-          <strong>Reviewer Name:</strong> ${order['Reviewer Name']}<br>
-          <strong>Buyer Amt Payable:</strong> ₹${order['Buyer Amt Payable']}<br>
-          <strong>Email address:</strong> ${order['Email address']}<br>
-          <strong>Paid By:</strong> ${order['Paid By'] || 'N/A'}<br>
-          <strong>Paid On:</strong> ${order['Paid On'] || 'N/A'}
-        `;
+        let html = '';
+        for (const key in order) {
+          html += `<strong>${key}:</strong> ${order[key] || 'N/A'}<br>`;
+        }
+        resultDiv.innerHTML = html;
+
       } catch (error) {
         resultDiv.className = 'result error';
-        resultDiv.textContent = '⚠️ Failed to fetch order. Please try again later.';
+        resultDiv.textContent = '⚠️ Failed to fetch data. Please try again later.';
         console.error(error);
       }
     }
