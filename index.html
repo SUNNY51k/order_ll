@@ -4,154 +4,148 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Order Lookup</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet" />
   <style>
     body {
-      font-family: 'Poppins', sans-serif;
-      background: #f9fafb;
-      margin: 0;
-      padding: 0;
+      background: #f7f9fc;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       display: flex;
-      min-height: 100vh;
-      align-items: center;
       justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      margin: 0;
+      padding: 40px 20px;
     }
     .container {
-      background: #fff;
-      padding: 2rem 3rem;
+      background: white;
+      padding: 30px 40px;
       border-radius: 10px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-      max-width: 400px;
-      width: 90%;
-      text-align: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      max-width: 480px;
+      width: 100%;
     }
     h1 {
-      margin-bottom: 1rem;
-      color: #222;
+      text-align: center;
+      color: #333;
+      margin-bottom: 25px;
+      font-weight: 700;
+      font-size: 1.8rem;
+      letter-spacing: 1px;
+    }
+    .search-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
     }
     input[type="text"] {
-      width: 100%;
+      flex-grow: 1;
       padding: 12px 15px;
       font-size: 1rem;
       border: 2px solid #ddd;
-      border-radius: 6px;
+      border-radius: 8px;
       transition: border-color 0.3s ease;
     }
     input[type="text"]:focus {
-      border-color: #007bff;
       outline: none;
+      border-color: #0078d7;
+      box-shadow: 0 0 6px #0078d7aa;
     }
     button {
-      margin-top: 15px;
-      width: 100%;
-      background-color: #007bff;
+      background-color: #0078d7;
       border: none;
       color: white;
-      font-size: 1.1rem;
-      padding: 12px;
-      border-radius: 6px;
+      padding: 12px 25px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1rem;
       cursor: pointer;
       transition: background-color 0.3s ease;
     }
-    button:hover:not(:disabled) {
-      background-color: #0056b3;
-    }
-    button:disabled {
-      background-color: #a0c1ff;
-      cursor: not-allowed;
+    button:hover {
+      background-color: #005ea2;
     }
     .result {
-      margin-top: 25px;
-      text-align: left;
+      background: #f0f4f8;
+      border-radius: 8px;
+      padding: 20px;
       font-size: 1rem;
-      color: #333;
+      color: #222;
+      line-height: 1.6;
+      min-height: 120px;
       white-space: pre-wrap;
+      user-select: text;
+      box-shadow: inset 0 0 5px #cbd5e1;
     }
-    .status {
+    .error {
+      color: #cc0000;
       font-weight: 600;
-      padding: 5px 12px;
-      border-radius: 15px;
-      color: white;
-      display: inline-block;
-      margin-top: 8px;
-      text-transform: uppercase;
-      font-size: 0.85rem;
     }
-    .shipped {
-      background-color: #28a745; /* green */
-    }
-    .not-shipped {
-      background-color: #dc3545; /* red */
-    }
-    .pending {
-      background-color: #fd7e14; /* orange */
+    .info {
+      color: #555;
+      font-style: italic;
     }
   </style>
 </head>
 <body>
+
   <div class="container">
     <h1>Order Lookup</h1>
-    <input id="orderId" type="text" placeholder="Enter Order ID" />
-    <button id="searchBtn" disabled>Search</button>
-    <div id="result" class="result"></div>
+    <div class="search-bar">
+      <input type="text" id="orderId" placeholder="Enter Order Id" aria-label="Order Id" />
+      <button onclick="searchOrder()">Search</button>
+    </div>
+    <div id="result" class="result info">Enter an Order Id to search for your order details.</div>
   </div>
 
   <script>
-    const orderIdInput = document.getElementById('orderId');
-    const searchBtn = document.getElementById('searchBtn');
-    const resultDiv = document.getElementById('result');
-    const scriptUrl = 'https://script.google.com/macros/s/AKfycbzq4bsC_5h45TfPTrZIMQ5L2FOzYwsGcS2IS62mdn2utfDXsxgGwjrOqjwiiHqZRKDrUg/exec';
+    async function searchOrder() {
+      const orderId = document.getElementById('orderId').value.trim();
+      const resultDiv = document.getElementById('result');
 
-    orderIdInput.addEventListener('input', () => {
-      searchBtn.disabled = !orderIdInput.value.trim();
-      resultDiv.textContent = ''; // Clear previous results on input change
-    });
+      if (!orderId) {
+        resultDiv.className = 'result error';
+        resultDiv.textContent = '⚠️ Please enter an Order Id.';
+        return;
+      }
 
-    searchBtn.addEventListener('click', async () => {
-      const orderId = orderIdInput.value.trim();
-      if (!orderId) return;
+      resultDiv.className = 'result info';
+      resultDiv.textContent = '🔎 Searching...';
 
-      resultDiv.textContent = 'Searching...';
+      // Replace this with your actual deployed Google Apps Script URL
+      const scriptUrl = 'https://script.google.com/macros/s/AKfycbyW8gawvI3PVrqwC-wSYUDydYJ6OHFMYd2tz0pMfCEVz0gsro-mm4UzOEULeLYr__Q2/exec';
 
       try {
-        const res = await fetch(`${scriptUrl}?orderId=${encodeURIComponent(orderId)}`);
-        const data = await res.json();
+        const response = await fetch(`${scriptUrl}?orderId=${encodeURIComponent(orderId)}`);
+        const data = await response.json();
 
         if (data.error) {
-          resultDiv.textContent = `Error: ${data.error}`;
+          resultDiv.className = 'result error';
+          resultDiv.textContent = `❌ Error: ${data.error}`;
           return;
         }
+
         if (!data.length) {
-          resultDiv.textContent = 'No order found with that Order ID.';
+          resultDiv.className = 'result info';
+          resultDiv.textContent = '🔍 No order found with that Order Id.';
           return;
         }
 
         const order = data[0];
-        const status = order.STATUS?.toLowerCase();
-
-        // Color-coded status badge
-        let statusClass = '';
-        if (status === 'shipped') statusClass = 'shipped';
-        else if (status === 'not shipped') statusClass = 'not-shipped';
-        else statusClass = 'pending';
-
-       resultDiv.innerHTML = `
-  <strong>Order ID:</strong> ${order['Order ID']}<br>
-  <strong>Reviewer Name:</strong> ${order['Reviewer Name']}<br>
-  <strong>Product:</strong> ${order['Product']}<br>
-  <strong>Amount:</strong> ₹${order['AMOUNT']}<br>
-  <strong>Status:</strong> <span class="status ${statusClass}">${order['STATUS']}</span><br>
-  <strong>Brand Name:</strong> ${order['Brand Name']}<br>
-  <strong>Payment Details:</strong> ${order['Payment Details']}<br>
-  <strong>Paid By:</strong> ${order['Paid By']}<br>
-  <strong>Paid On:</strong> ${order['Paid On']}<br>
-`;
-
-      } catch (err) {
-        resultDiv.textContent = 'Error fetching data.';
-        console.error(err);
+        resultDiv.className = 'result';
+        resultDiv.innerHTML = `
+          <strong>Order Id:</strong> ${order['Order Id']}<br>
+          <strong>Reviewer Name:</strong> ${order['Reviewer Name']}<br>
+          <strong>Buyer Amt Payable:</strong> ₹${order['Buyer Amt Payable']}<br>
+          <strong>Email address:</strong> ${order['Email address']}<br>
+          <strong>Paid By:</strong> ${order['Paid By'] || 'N/A'}<br>
+          <strong>Paid On:</strong> ${order['Paid On'] || 'N/A'}
+        `;
+      } catch (error) {
+        resultDiv.className = 'result error';
+        resultDiv.textContent = '⚠️ Failed to fetch order. Please try again later.';
+        console.error(error);
       }
-    });
+    }
   </script>
+
 </body>
 </html>
