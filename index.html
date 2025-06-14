@@ -135,13 +135,18 @@
         else if (status === 'not shipped') statusClass = 'not-shipped';
         else statusClass = 'pending';
 
-        resultDiv.innerHTML = `
-          <strong>Order ID:</strong> ${order['Order ID']}<br>
-          <strong>Customer Name:</strong> ${order['Reviewer Name']}<br>
-          <strong>Product:</strong> ${order.Product}<br>
-          <strong>Amount:</strong> ₹${order.AMOUNT}<br>
-          <strong>Status:</strong> <span class="status ${statusClass}">${order.STATUS}</span>
-        `;
+       resultDiv.innerHTML = `
+  <strong>Order ID:</strong> ${order['Order ID']}<br>
+  <strong>Reviewer Name:</strong> ${order['Reviewer Name']}<br>
+  <strong>Product:</strong> ${order['Product']}<br>
+  <strong>Amount:</strong> ₹${order['AMOUNT']}<br>
+  <strong>Status:</strong> <span class="status ${statusClass}">${order['STATUS']}</span><br>
+  <strong>Brand Name:</strong> ${order['Brand Name']}<br>
+  <strong>Payment Details:</strong> ${order['Payment Details']}<br>
+  <strong>Paid By:</strong> ${order['Paid By']}<br>
+  <strong>Paid On:</strong> ${order['Paid On']}<br>
+`;
+
       } catch (err) {
         resultDiv.textContent = 'Error fetching data.';
         console.error(err);
